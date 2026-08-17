@@ -1,0 +1,27 @@
+name: Podium
+options:
+  bundleIdPrefix: app.podium
+  deploymentTarget:
+    macOS: "15.0"
+packages:
+  PodiumKit:
+    path: .
+targets:
+  Podium:
+    type: application
+    platform: macOS
+    sources: [App]
+    dependencies:
+      - package: PodiumKit
+        product: PodiumKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.podium.mac
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_IDENTITY: "-"
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "6.0"
+        ENABLE_HARDENED_RUNTIME: NO
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        INFOPLIST_KEY_NSHumanReadableCopyright: "MIT License"
