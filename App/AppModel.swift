@@ -17,11 +17,18 @@ struct KeywordRow: Identifiable, Equatable {
     }
 }
 
+enum SidebarItem: Hashable {
+    case app(Int)
+    case discover
+    case adsPerformance
+}
+
 @Observable
 @MainActor
 final class AppModel {
     var apps: [TrackedApp] = []
     var selectedAppId: Int?
+    var destination: SidebarItem?
     var rows: [KeywordRow] = []
     var credentials: AdsCredentials?
     var isRefreshing = false
@@ -43,8 +50,21 @@ final class AppModel {
         credentials = try? credentialsStore.load()
         reloadApps()
         if let first = apps.first { select(appId: first.id) }
+        destination = selectedAppId.map(SidebarItem.app)
         showOnboarding = apps.isEmpty
             && !UserDefaults.standard.bool(forKey: "onboardingDone")
+    }
+
+    func adsAPI() -> AdsAPIClient? {
+        guard let credentials else { return nil }
+        return AdsAPIClient(
+            credentials: credentials,
+            tokenProvider: TokenProvider(credentials: credentials))
+    }
+
+    func trackTerm(_ term: String, appId: Int, country: String) {
+        try? db.addKeyword(appId: appId, term: term.lowercased(), country: country.lowercased())
+        if selectedAppId == appId { reloadRows() }
     }
 
     func reloadApps() {

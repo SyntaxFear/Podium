@@ -14,9 +14,14 @@ struct RootView: View {
                 NavigationSplitView {
                     sidebar
                 } detail: {
-                    if model.selectedAppId != nil {
+                    switch model.destination {
+                    case .app:
                         KeywordsView()
-                    } else {
+                    case .discover:
+                        DiscoverView()
+                    case .adsPerformance:
+                        AdsPerformanceView()
+                    case nil:
                         ContentUnavailableView(
                             "Add your first app",
                             systemImage: "plus.app",
@@ -34,7 +39,7 @@ struct RootView: View {
 
     private var sidebar: some View {
         @Bindable var model = model
-        return List(selection: $model.selectedAppId) {
+        return List(selection: $model.destination) {
             Section("My apps") {
                 ForEach(model.apps, id: \.id) { app in
                     HStack(spacing: 10) {
@@ -53,7 +58,7 @@ struct RootView: View {
                             }
                         }
                     }
-                    .tag(app.id)
+                    .tag(SidebarItem.app(app.id))
                 }
                 Button {
                     showAddApp = true
@@ -63,9 +68,9 @@ struct RootView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.tint)
             }
-            Section("Coming next") {
-                Label("Discover", systemImage: "safari").foregroundStyle(.tertiary)
-                Label("Ads performance", systemImage: "chart.bar").foregroundStyle(.tertiary)
+            Section("Research") {
+                Label("Discover", systemImage: "safari").tag(SidebarItem.discover)
+                Label("Ads performance", systemImage: "chart.bar").tag(SidebarItem.adsPerformance)
             }
         }
         .navigationSplitViewColumnWidth(min: 190, ideal: 220)
@@ -80,8 +85,8 @@ struct RootView: View {
                 .padding(10)
             }
         }
-        .onChange(of: model.selectedAppId) { _, newValue in
-            if let newValue { model.select(appId: newValue) }
+        .onChange(of: model.destination) { _, newValue in
+            if case .app(let id) = newValue { model.select(appId: id) }
         }
     }
 }
