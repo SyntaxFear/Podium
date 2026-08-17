@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-and-build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package tests
+        run: swift test
+      - name: Build app
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -project Podium.xcodeproj -scheme Podium -configuration Debug CODE_SIGNING_ALLOWED=NO build

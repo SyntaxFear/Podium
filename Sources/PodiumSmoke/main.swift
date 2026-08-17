@@ -50,6 +50,46 @@ case "popularity":
         print(String(format: "%3d  %3d  %@", row.rank, row.popularity, row.searchTerm))
     }
 
+case "seed":
+    // Dev helper: podium-smoke seed <appId> <country> <terms-comma-separated> [demoHistoryDays]
+    // Adds the app + keywords with a real current rank snapshot. With demoHistoryDays > 0 it
+    // also writes deterministic synthetic history — for screenshots and UI work only.
+    guard args.count >= 4, let appId = Int(args[1]) else {
+        fail("usage: podium-smoke seed <appId> <country> <terms-comma-separated> [demoHistoryDays]")
+    }
+    let country = args[2]
+    let terms = args[3].split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+    let demoDays = args.count >= 5 ? (Int(args[4]) ?? 0) : 0
+    let db = try PodiumDatabase(path: PodiumPaths.databaseURL().path)
+    let client = AppStoreSearchClient()
+    guard let app = try await client.lookup(appId: appId, country: country) else {
+        fail("app \(appId) not found in \(country)")
+    }
+    try db.upsertApp(TrackedApp(
+        id: app.trackId, name: app.trackName, artworkURL: app.artworkUrl100,
+        rating: app.averageUserRating, ratingCount: app.userRatingCount))
+    var rng: UInt64 = 42
+    func pseudoRandom(_ bound: Int) -> Int {
+        rng = rng &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+        return Int(rng >> 33) % bound
+    }
+    for term in terms {
+        let keyword = try db.addKeyword(appId: appId, term: term.lowercased(), country: country.lowercased())
+        let current = try await client.rank(ofApp: appId, term: term, country: country)
+        if demoDays > 0 {
+            var rank = current ?? (15 + pseudoRandom(40))
+            for day in stride(from: demoDays, through: 1, by: -1) {
+                rank = max(1, min(200, rank + pseudoRandom(7) - 3))
+                try db.insertRankSnapshot(
+                    keywordId: keyword.id, rank: rank,
+                    at: Date().addingTimeInterval(TimeInterval(-day * 86_400)))
+            }
+        }
+        try db.insertRankSnapshot(keywordId: keyword.id, rank: current, at: Date())
+        print("\(term): rank \(current.map(String.init) ?? "–")")
+    }
+    print("seeded \(terms.count) keywords for \(app.trackName)")
+
 default:
     fail("unknown command \(command)")
 }
