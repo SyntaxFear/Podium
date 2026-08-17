@@ -134,10 +134,18 @@ final class AppModel {
     }
 
     func addKeyword(term: String, country: String) {
+        addKeywords(terms: [term], countries: [country])
+    }
+
+    func addKeywords(terms: [String], countries: [String]) {
         guard let appId = selectedAppId else { return }
-        let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !trimmed.isEmpty else { return }
-        try? db.addKeyword(appId: appId, term: trimmed, country: country)
+        for term in terms {
+            let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !trimmed.isEmpty else { continue }
+            for country in countries {
+                try? db.addKeyword(appId: appId, term: trimmed, country: country.lowercased())
+            }
+        }
         reloadRows()
         Task { await refresh() }
     }
