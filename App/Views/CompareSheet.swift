@@ -20,6 +20,7 @@ struct CompareSheet: View {
                 }
                 Spacer()
                 Button("Add competitor") { showAddCompetitor = true }
+                    .buttonStyle(.glassProminent)
                 Button {
                     dismiss()
                 } label: {
@@ -39,7 +40,7 @@ struct CompareSheet: View {
                     Text("Add a competitor app to see their rank next to yours on every keyword you track.")
                 } actions: {
                     Button("Add competitor") { showAddCompetitor = true }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.glassProminent)
                 }
             } else if model.rows.isEmpty {
                 ContentUnavailableView(
@@ -131,7 +132,7 @@ struct AddCompetitorSheet: View {
                         model.addCompetitor(app)
                         dismiss()
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                 }
             }
             .overlay {

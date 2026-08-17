@@ -2,7 +2,7 @@ name: Podium
 options:
   bundleIdPrefix: app.podium
   deploymentTarget:
-    macOS: "15.0"
+    macOS: "26.0"
 packages:
   PodiumKit:
     path: .

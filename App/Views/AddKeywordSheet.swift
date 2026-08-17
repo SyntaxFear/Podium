@@ -62,9 +62,10 @@ struct AddKeywordSheet: View {
                 Text(summary).font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("Cancel") { dismiss() }
+                    .buttonStyle(.glass)
                     .keyboardShortcut(.cancelAction)
                 Button("Track all") { add() }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                     .disabled(parsedTerms.isEmpty || selectedCountries.isEmpty)
             }
         }

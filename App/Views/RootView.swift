@@ -86,6 +86,7 @@ struct RootView: View {
                     Label("Connect Apple Ads", systemImage: "key")
                         .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.glassProminent)
                 .padding(10)
             }
         }

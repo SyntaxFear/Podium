@@ -62,7 +62,7 @@ struct WizardView: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                 Button("Get started") { step = .choosePath }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                     .controlSize(.large)
             }
         case .choosePath:
@@ -96,9 +96,10 @@ struct WizardView: View {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(publicKeyPEM, forType: .string)
                     }
+                    .buttonStyle(.glass)
                     Link("Open Apple Ads", destination: URL(string: "https://ads.apple.com")!)
                     Spacer()
-                    Button("Next") { step = .enterIds }.buttonStyle(.borderedProminent)
+                    Button("Next") { step = .enterIds }.buttonStyle(.glassProminent)
                 }
                 Text("The private part never leaves your Mac — it will be stored in your Keychain.")
                     .font(.caption).foregroundStyle(.tertiary)
@@ -121,9 +122,10 @@ struct WizardView: View {
                 }
                 HStack {
                     Button("Back") { step = .generateKey }
+                        .buttonStyle(.glass)
                     Spacer()
                     Button(isValidating ? "Checking…" : "Validate and finish") { validate() }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.glassProminent)
                         .disabled(isValidating || clientId.isEmpty || teamId.isEmpty || keyId.isEmpty)
                 }
             }
@@ -137,7 +139,7 @@ struct WizardView: View {
                 Button("Open Podium") {
                     model.finishOnboarding(with: validatedCredentials ?? currentCredentials())
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
                 .controlSize(.large)
             }
         }
@@ -157,7 +159,7 @@ struct WizardView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity)
-            .background(.quinary, in: RoundedRectangle(cornerRadius: 12))
+            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
     }

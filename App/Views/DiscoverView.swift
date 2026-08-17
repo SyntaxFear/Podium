@@ -31,7 +31,7 @@ struct DiscoverView: View {
                     Text("Discover shows Apple's official most-searched terms — up to 500 per country and category — with popularity scores. Connect your free Apple Ads account to unlock it.")
                 } actions: {
                     Button("Connect Apple Ads") { model.showConnectWizard = true }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.glassProminent)
                 }
             } else {
                 content
@@ -92,6 +92,7 @@ struct DiscoverView: View {
                     if isLoading { ProgressView().controlSize(.small) }
                     else { Label("Load", systemImage: "arrow.clockwise") }
                 }
+                .buttonStyle(.glassProminent)
                 .disabled(isLoading || selectedCountries.isEmpty)
             }
             .padding(12)

@@ -3,9 +3,10 @@ import SwiftUI
 @main
 struct PodiumApp: App {
     @State private var model = AppModel()
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             RootView()
                 .environment(model)
                 .frame(minWidth: 860, minHeight: 520)
@@ -31,7 +32,7 @@ struct PodiumApp: App {
             Button("Refresh now") { Task { await model.refresh() } }
             Button("Open Podium") {
                 NSApp.activate(ignoringOtherApps: true)
-                NSApp.windows.first?.makeKeyAndOrderFront(nil)
+                openWindow(id: "main")
             }
             Divider()
             Button("Quit Podium") { NSApp.terminate(nil) }

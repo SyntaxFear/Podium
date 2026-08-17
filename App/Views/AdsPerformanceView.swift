@@ -20,7 +20,7 @@ struct AdsPerformanceView: View {
                     Text("See impressions, taps, installs, spend, and Apple's own bid suggestions for your campaigns — read-only, Podium can never touch your budget.")
                 } actions: {
                     Button("Connect Apple Ads") { model.showConnectWizard = true }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.glassProminent)
                 }
             } else {
                 content
@@ -55,6 +55,7 @@ struct AdsPerformanceView: View {
                     if isLoading { ProgressView().controlSize(.small) }
                     else { Label("Load", systemImage: "arrow.clockwise") }
                 }
+                .buttonStyle(.glassProminent)
                 .disabled(isLoading)
             }
             .padding(12)
@@ -80,15 +81,17 @@ struct AdsPerformanceView: View {
     }
 
     private func summaryStrip(_ totals: ReportMetrics) -> some View {
-        HStack(spacing: 24) {
-            metric("Spend", totals.localSpend.map { String(format: "$%.2f", $0.value) } ?? "–")
-            metric("Impressions", totals.impressions.map(formatted) ?? "–")
-            metric("Taps", totals.taps.map(formatted) ?? "–")
-            metric("Installs", totals.tapInstalls.map(formatted) ?? "–")
-            if let cpi = totals.tapInstallCPI?.value, cpi > 0 {
-                metric("Avg CPI", String(format: "$%.2f", cpi))
+        GlassEffectContainer(spacing: 12) {
+            HStack(spacing: 12) {
+                metric("Spend", totals.localSpend.map { String(format: "$%.2f", $0.value) } ?? "–")
+                metric("Impressions", totals.impressions.map(formatted) ?? "–")
+                metric("Taps", totals.taps.map(formatted) ?? "–")
+                metric("Installs", totals.tapInstalls.map(formatted) ?? "–")
+                if let cpi = totals.tapInstallCPI?.value, cpi > 0 {
+                    metric("Avg CPI", String(format: "$%.2f", cpi))
+                }
+                Spacer()
             }
-            Spacer()
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
     }
@@ -98,6 +101,8 @@ struct AdsPerformanceView: View {
             Text(value).font(.title3.bold())
             Text(label).font(.caption).foregroundStyle(.secondary)
         }
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
     }
 
     private func formatted(_ n: Int) -> String {

@@ -14,9 +14,11 @@ struct SettingsView: View {
                 if model.credentials != nil {
                     LabeledContent("Status", value: "Connected")
                     Button("Disconnect", role: .destructive) { model.disconnectAds() }
+                        .buttonStyle(.glass)
                 } else {
                     LabeledContent("Status", value: "Not connected")
                     Button("Connect Apple Ads") { model.showConnectWizard = true }
+                        .buttonStyle(.glassProminent)
                 }
             }
             Section("Refresh") {
@@ -38,6 +40,7 @@ struct SettingsView: View {
                     }
                 }
                 Button("Export keyword history as CSV") { exportCSV() }
+                    .buttonStyle(.glass)
                     .disabled(exportAppId == nil)
             }
         }

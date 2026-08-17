@@ -35,7 +35,7 @@ struct AddAppSheet: View {
                         model.addApp(app)
                         dismiss()
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                 }
             }
             .overlay {
