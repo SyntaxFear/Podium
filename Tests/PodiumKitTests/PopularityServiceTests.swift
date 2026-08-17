@@ -6,7 +6,7 @@ final class PopularityServiceTests: XCTestCase {
     private func makeAPI() -> AdsAPIClient {
         let creds = AdsCredentials(
             clientId: "c", teamId: "t", keyId: "k",
-            privateKeyPEM: P256.Signing.PrivateKey().pemRepresentation, orgId: 1)
+            privateKeyPEM: P256.Signing.PrivateKey().pemRepresentation, adAccountId: 1)
         let session = MockURLProtocol.makeSession()
         return AdsAPIClient(
             credentials: creds,
@@ -19,8 +19,10 @@ final class PopularityServiceTests: XCTestCase {
             if request.url?.host == "appleid.apple.com" {
                 return (200, Data(#"{"access_token":"tok","token_type":"Bearer","expires_in":3600}"#.utf8))
             }
+            XCTAssertEqual(request.value(forHTTPHeaderField: "X-AP-Context"), "adAccountId=1")
+            XCTAssertTrue(request.url!.path.contains("suggestions/keywords/query"))
             let json = #"""
-            {"data":[
+            {"result":[
               {"text":"kids drawing","popularity":74},
               {"text":"drawing games","popularity":50},
               {"text":"Art Scrapbook","popularity":41}
@@ -31,7 +33,7 @@ final class PopularityServiceTests: XCTestCase {
         let service = PopularityService(api: makeAPI())
 
         let map = try await service.popularity(
-            for: ["kids drawing", "art scrapbook", "missing term"], countries: ["US"])
+            appId: 555, for: ["kids drawing", "art scrapbook", "missing term"], countries: ["us"])
 
         XCTAssertEqual(map["kids drawing"], 74)
         XCTAssertEqual(map["art scrapbook"], 41)
@@ -44,7 +46,8 @@ final class PopularityServiceTests: XCTestCase {
             XCTFail("no network call expected")
             return (500, Data())
         }
-        let map = try await PopularityService(api: makeAPI()).popularity(for: [], countries: ["US"])
+        let map = try await PopularityService(api: makeAPI())
+            .popularity(appId: 1, for: [], countries: ["US"])
         XCTAssertEqual(map, [:])
     }
 }

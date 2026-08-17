@@ -1,6 +1,7 @@
 {
-  "data": [
+  "result": [
     { "text": "kids art app", "popularity": 41 },
     { "text": "drawing for kids", "popularity": 38 }
-  ]
+  ],
+  "pagination": null
 }

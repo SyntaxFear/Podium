@@ -1,8 +1,8 @@
 import Foundation
 
 public struct AdsAPIClient: Sendable {
-    /// Verified against Apple's live docs in Task 9 (smoke). Single source of truth for the host.
-    public static let defaultBaseURL = URL(string: "https://api.searchads.apple.com/api/v1")!
+    /// Apple Ads Platform API v1 host (per official docs; supersedes api.searchads.apple.com).
+    public static let defaultBaseURL = URL(string: "https://api.ads.apple.com/v1")!
 
     let baseURL: URL
     let credentials: AdsCredentials
@@ -49,8 +49,8 @@ public struct AdsAPIClient: Sendable {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             let token = try await tokenProvider.validToken()
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            if let orgId = credentials.orgId {
-                request.setValue("orgId=\(orgId)", forHTTPHeaderField: "X-AP-Context")
+            if let accountId = credentials.adAccountId ?? credentials.orgId {
+                request.setValue("adAccountId=\(accountId)", forHTTPHeaderField: "X-AP-Context")
             }
             if let body {
                 request.httpBody = try JSONEncoder().encode(body)
@@ -74,7 +74,9 @@ public struct AdsAPIClient: Sendable {
                     if status == 429 { throw PodiumError.rateLimited }
                     throw PodiumError.http(status: status, body: String(decoding: data, as: UTF8.self))
                 }
-                await sleep(.seconds(Double(1 << (attempt - 1))))
+                let retryAfter = (response as? HTTPURLResponse)?
+                    .value(forHTTPHeaderField: "Retry-After").flatMap(Double.init)
+                await sleep(.seconds(retryAfter ?? Double(1 << (attempt - 1))))
                 continue
             default:
                 throw PodiumError.http(status: status, body: String(decoding: data, as: UTF8.self))

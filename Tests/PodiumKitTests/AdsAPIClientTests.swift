@@ -23,7 +23,7 @@ final class AdsAPIClientTests: XCTestCase {
                 return (200, Data(#"{"access_token":"tok","token_type":"Bearer","expires_in":3600}"#.utf8))
             }
             XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer tok")
-            XCTAssertEqual(request.value(forHTTPHeaderField: "X-AP-Context"), "orgId=42")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "X-AP-Context"), "adAccountId=42")
             XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
             return (200, Data(#"{"ok":true}"#.utf8))
         }

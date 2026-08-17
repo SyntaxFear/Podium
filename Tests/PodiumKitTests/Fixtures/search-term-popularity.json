@@ -1,7 +1,9 @@
 {
-  "data": [
-    { "searchTerm": "kids drawing", "rank": 1, "popularity": 74 },
-    { "searchTerm": "coloring book", "rank": 2, "popularity": 69 }
-  ],
-  "pagination": { "totalResults": 2, "startIndex": 0, "itemsPerPage": 50 }
+  "result": {
+    "rows": [
+      { "week": "2026-08-09", "countryOrRegion": "US", "genre": "ALL", "searchTerm": "kids drawing", "rankInGenre": 1, "searchPopularityInGenre": 74, "searchPopularity1to100": 74, "searchPopularity1to5": 4 },
+      { "week": "2026-08-09", "countryOrRegion": "US", "genre": "ALL", "searchTerm": "coloring book", "rankInGenre": 2, "searchPopularityInGenre": 69, "searchPopularity1to100": 69, "searchPopularity1to5": 4 }
+    ]
+  },
+  "pagination": { "offset": 0, "pageSize": 500, "totalCount": 2 }
 }

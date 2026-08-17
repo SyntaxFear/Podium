@@ -182,14 +182,12 @@ final class AppModel {
     }
 
     func loadPopularity() async {
-        guard let credentials, !rows.isEmpty else { return }
-        let api = AdsAPIClient(
-            credentials: credentials,
-            tokenProvider: TokenProvider(credentials: credentials))
+        guard credentials != nil, let appId = selectedAppId, !rows.isEmpty else { return }
+        guard let api = adsAPI() else { return }
         let service = PopularityService(api: api)
         let terms = rows.map(\.term)
         let countries = Array(Set(rows.map { $0.country.uppercased() }))
-        guard let map = try? await service.popularity(for: terms, countries: countries) else { return }
+        guard let map = try? await service.popularity(appId: appId, for: terms, countries: countries) else { return }
         rows = rows.map { row in
             KeywordRow(
                 id: row.id, term: row.term, country: row.country,

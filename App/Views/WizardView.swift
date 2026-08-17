@@ -18,6 +18,7 @@ struct WizardView: View {
     @State private var orgId = ""
     @State private var isValidating = false
     @State private var validationError: String?
+    @State private var validatedCredentials: AdsCredentials?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -134,7 +135,7 @@ struct WizardView: View {
                 Text("Official Apple data is now available. Add your app and start tracking.")
                     .foregroundStyle(.secondary)
                 Button("Open Podium") {
-                    model.finishOnboarding(with: currentCredentials())
+                    model.finishOnboarding(with: validatedCredentials ?? currentCredentials())
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
@@ -179,10 +180,17 @@ struct WizardView: View {
     private func validate() {
         isValidating = true
         validationError = nil
-        let creds = currentCredentials()
+        var creds = currentCredentials()
         Task {
             do {
-                _ = try await TokenProvider(credentials: creds).validToken()
+                let provider = TokenProvider(credentials: creds)
+                _ = try await provider.validToken()
+                let api = AdsAPIClient(credentials: creds, tokenProvider: provider)
+                let accounts = try await api.acls()
+                if let accountId = accounts.compactMap(\.adAccount?.id).first {
+                    creds.adAccountId = accountId
+                }
+                validatedCredentials = creds
                 step = .done
             } catch {
                 validationError = "Apple rejected the credentials — double-check each value and that the key is saved in Apple Ads. (\(error))"

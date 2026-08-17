@@ -5,14 +5,21 @@ public struct AdsCredentials: Sendable, Codable, Equatable {
     public var teamId: String
     public var keyId: String
     public var privateKeyPEM: String
+    /// Legacy org scoping (v5-style); kept so previously saved credentials still decode.
     public var orgId: Int?
+    /// Ad-account scoping for the Platform API (X-AP-Context: adAccountId=…).
+    public var adAccountId: Int?
 
-    public init(clientId: String, teamId: String, keyId: String, privateKeyPEM: String, orgId: Int? = nil) {
+    public init(
+        clientId: String, teamId: String, keyId: String, privateKeyPEM: String,
+        orgId: Int? = nil, adAccountId: Int? = nil
+    ) {
         self.clientId = clientId
         self.teamId = teamId
         self.keyId = keyId
         self.privateKeyPEM = privateKeyPEM
         self.orgId = orgId
+        self.adAccountId = adAccountId
     }
 }
 

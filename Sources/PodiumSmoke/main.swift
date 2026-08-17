@@ -32,22 +32,38 @@ case "rank":
     }
     print("rank for \"\(term)\" in \(country.uppercased()): \(rank.map(String.init) ?? "not in top 200")")
 
-case "popularity":
-    guard args.count == 2 else { fail("usage: podium-smoke popularity <countryOrRegion>") }
+case "popularity", "accounts":
     let env = ProcessInfo.processInfo.environment
     guard let clientId = env["PODIUM_CLIENT_ID"], let teamId = env["PODIUM_TEAM_ID"],
-          let keyId = env["PODIUM_KEY_ID"], let keyPath = env["PODIUM_PRIVATE_KEY_PATH"],
-          let orgId = env["PODIUM_ORG_ID"].flatMap(Int.init) else {
-        fail("missing env: PODIUM_CLIENT_ID, PODIUM_TEAM_ID, PODIUM_KEY_ID, PODIUM_PRIVATE_KEY_PATH, PODIUM_ORG_ID")
+          let keyId = env["PODIUM_KEY_ID"], let keyPath = env["PODIUM_PRIVATE_KEY_PATH"] else {
+        fail("missing env: PODIUM_CLIENT_ID, PODIUM_TEAM_ID, PODIUM_KEY_ID, PODIUM_PRIVATE_KEY_PATH [PODIUM_AD_ACCOUNT_ID]")
     }
     let pem = try String(contentsOfFile: keyPath, encoding: .utf8)
     let creds = AdsCredentials(
-        clientId: clientId, teamId: teamId, keyId: keyId, privateKeyPEM: pem, orgId: orgId)
+        clientId: clientId, teamId: teamId, keyId: keyId, privateKeyPEM: pem,
+        adAccountId: env["PODIUM_AD_ACCOUNT_ID"].flatMap(Int.init))
     let api = AdsAPIClient(credentials: creds, tokenProvider: TokenProvider(credentials: creds))
-    let response = try await api.searchTermPopularity(
-        SearchTermPopularityRequest(countryOrRegion: args[1]))
-    for row in response.data.prefix(20) {
-        print(String(format: "%3d  %3d  %@", row.rank, row.popularity, row.searchTerm))
+
+    if command == "accounts" {
+        let identity = try await api.me()
+        print("me: orgId=\(identity.orgId.map(String.init) ?? "?") userId=\(identity.userId.map(String.init) ?? "?")")
+        for acl in try await api.acls() {
+            print("adAccount id=\(acl.adAccount?.id.map(String.init) ?? "?") name=\(acl.adAccount?.name ?? "?") roles=\(acl.roles?.joined(separator: ",") ?? "?")")
+        }
+    } else {
+        guard args.count == 2 else { fail("usage: podium-smoke popularity <countryOrRegion>") }
+        let query = SearchTermPopularityQuery(
+            timeRange: SearchTermPopularityQuery.latestWindow(granularity: .weekly),
+            filters: [APIFilter(field: "countryOrRegion", op: "EQUALS", value: [args[1].uppercased()])],
+            sorting: [APISort(field: "rankInGenre", order: "ASC")],
+            pagination: APIPage(offset: 0, pageSize: 500))
+        let response = try await api.searchTermPopularity(query)
+        for row in response.rows.prefix(25) {
+            print(String(
+                format: "%3d  %3d  %@",
+                row.rankInGenre ?? 0, row.searchPopularity1to100 ?? 0, row.searchTerm))
+        }
+        print("total: \(response.pagination?.totalCount ?? response.rows.count)")
     }
 
 case "seed":
