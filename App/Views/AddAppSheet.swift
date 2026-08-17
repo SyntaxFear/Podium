@@ -50,10 +50,17 @@ struct AddAppSheet: View {
             }
         }
         .frame(width: 480, height: 420)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Close") { dismiss() }
+        .overlay(alignment: .topTrailing) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
             }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.cancelAction)
+            .padding(10)
         }
     }
 

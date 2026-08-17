@@ -63,8 +63,9 @@ final class AppModel {
         showOnboarding = apps.isEmpty
             && !UserDefaults.standard.bool(forKey: "onboardingDone")
 
-        Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { _ in
+        Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
             Task { @MainActor in
+                guard let self else { return }
                 let autoRefreshSetting = UserDefaults.standard.object(forKey: "autoRefresh")
                 guard autoRefreshSetting == nil || UserDefaults.standard.bool(forKey: "autoRefresh") else { return }
                 let last = self.lastRefreshAt ?? .distantPast
@@ -131,6 +132,7 @@ final class AppModel {
             rating: app.averageUserRating, ratingCount: app.userRatingCount))
         reloadApps()
         select(appId: app.trackId)
+        destination = .app(app.trackId)
     }
 
     func addKeyword(term: String, country: String) {

@@ -16,6 +16,7 @@ struct RankHistorySheet: View {
                 }
                 Spacer()
                 Button("Close") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
             }
             let points = row.history.filter { $0.rank != nil }
             if points.count < 2 {

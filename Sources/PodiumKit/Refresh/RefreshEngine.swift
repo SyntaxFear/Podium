@@ -33,16 +33,23 @@ public struct RefreshEngine: Sendable {
     }
 
     /// Checks every tracked keyword, appends snapshots, and returns rank changes (old != new only).
+    /// Throttled to stay under App Store search rate limits; a failing keyword (network error,
+    /// rate limit, or deleted mid-refresh) is skipped so the rest of the loop completes.
     public func refreshAllKeywords() async throws -> [RankChange] {
         var changes: [RankChange] = []
-        for keyword in try db.allKeywords() {
-            let previous = try db.latestRank(keywordId: keyword.id)?.rank
-            let current = try await rankProvider(keyword.term, keyword.country, keyword.appId)
-            try db.insertRankSnapshot(keywordId: keyword.id, rank: current, at: now())
-            if previous != current {
-                changes.append(RankChange(
-                    keywordId: keyword.id, term: keyword.term, country: keyword.country,
-                    old: previous, new: current))
+        for (index, keyword) in try db.allKeywords().enumerated() {
+            if index > 0 { try? await Task.sleep(for: .milliseconds(400)) }
+            do {
+                let previous = try db.latestRank(keywordId: keyword.id)?.rank
+                let current = try await rankProvider(keyword.term, keyword.country, keyword.appId)
+                try db.insertRankSnapshot(keywordId: keyword.id, rank: current, at: now())
+                if previous != current {
+                    changes.append(RankChange(
+                        keywordId: keyword.id, term: keyword.term, country: keyword.country,
+                        old: previous, new: current))
+                }
+            } catch {
+                continue
             }
         }
         return changes

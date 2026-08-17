@@ -70,7 +70,10 @@ public struct AdsAPIClient: Sendable {
                 await tokenProvider.invalidate()
                 continue
             case 429, 500...599:
-                if attempt > maxRetries { throw PodiumError.rateLimited }
+                if attempt > maxRetries {
+                    if status == 429 { throw PodiumError.rateLimited }
+                    throw PodiumError.http(status: status, body: String(decoding: data, as: UTF8.self))
+                }
                 await sleep(.seconds(Double(1 << (attempt - 1))))
                 continue
             default:

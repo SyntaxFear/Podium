@@ -134,8 +134,10 @@ public final class PodiumDatabase: Sendable {
 
     public func rankHistory(keywordId: Int64, limit: Int = 90) throws -> [RankSnapshot] {
         try queue.read { db in
-            try RankSnapshot.filter(Column("keywordId") == keywordId)
-                .order(Column("checkedAt").asc).limit(limit).fetchAll(db)
+            Array(
+                try RankSnapshot.filter(Column("keywordId") == keywordId)
+                    .order(Column("checkedAt").desc).limit(limit).fetchAll(db)
+                    .reversed())
         }
     }
 }

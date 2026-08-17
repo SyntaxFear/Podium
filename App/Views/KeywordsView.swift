@@ -71,8 +71,10 @@ struct KeywordsView: View {
                     .width(60)
                 }
                 .contextMenu(forSelectionType: KeywordRow.ID.self) { ids in
-                    Button("Stop tracking", role: .destructive) {
-                        ids.forEach { model.deleteKeyword($0) }
+                    if !ids.isEmpty {
+                        Button("Stop tracking", role: .destructive) {
+                            ids.forEach { model.deleteKeyword($0) }
+                        }
                     }
                 } primaryAction: { ids in
                     if let id = ids.first, let row = model.rows.first(where: { $0.id == id }) {
@@ -107,7 +109,8 @@ struct KeywordsView: View {
         }
         .sheet(isPresented: $showAddKeyword) { AddKeywordSheet() }
         .sheet(item: $detailRow) { row in RankHistorySheet(row: row) }
-        .task { await model.loadPopularity() }
+        .task(id: model.selectedAppId) { await model.loadPopularity() }
+        .onChange(of: model.selectedAppId) { _, _ in selection.removeAll() }
         .overlay(alignment: .bottom) {
             if let error = model.lastError {
                 Text(error)

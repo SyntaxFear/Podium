@@ -4,6 +4,7 @@ import PodiumKit
 struct RootView: View {
     @Environment(AppModel.self) private var model
     @State private var showAddApp = false
+    @State private var appPendingRemoval: TrackedApp?
 
     var body: some View {
         @Bindable var model = model
@@ -60,7 +61,7 @@ struct RootView: View {
                     }
                     .tag(SidebarItem.app(app.id))
                     .contextMenu {
-                        Button("Remove app", role: .destructive) { model.removeApp(app.id) }
+                        Button("Remove app…", role: .destructive) { appPendingRemoval = app }
                     }
                 }
                 Button {
@@ -90,6 +91,20 @@ struct RootView: View {
         }
         .onChange(of: model.destination) { _, newValue in
             if case .app(let id) = newValue { model.select(appId: id) }
+        }
+        .confirmationDialog(
+            "Remove \(appPendingRemoval?.name ?? "app")?",
+            isPresented: Binding(
+                get: { appPendingRemoval != nil },
+                set: { if !$0 { appPendingRemoval = nil } })
+        ) {
+            Button("Remove app and history", role: .destructive) {
+                if let app = appPendingRemoval { model.removeApp(app.id) }
+                appPendingRemoval = nil
+            }
+            Button("Cancel", role: .cancel) { appPendingRemoval = nil }
+        } message: {
+            Text("All tracked keywords and rank history for this app will be deleted.")
         }
     }
 }

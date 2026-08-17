@@ -28,20 +28,22 @@ struct WizardView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.background)
         .overlay(alignment: .topTrailing) {
-            if connectOnly {
-                Button {
+            Button {
+                if connectOnly {
                     model.showConnectWizard = false
                     dismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
+                } else {
+                    model.finishOnboarding(with: nil)
                 }
-                .buttonStyle(.plain)
-                .keyboardShortcut(.cancelAction)
-                .padding(14)
-                .help("Close — you can finish connecting anytime")
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
             }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.cancelAction)
+            .padding(14)
+            .help("Close — you can finish connecting anytime from the sidebar")
         }
         .onAppear { if connectOnly { generateKey(); step = .generateKey } }
     }
