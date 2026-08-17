@@ -1,0 +1,7 @@
+{
+  "data": [
+    { "searchTerm": "kids drawing", "rank": 1, "popularity": 74 },
+    { "searchTerm": "coloring book", "rank": 2, "popularity": 69 }
+  ],
+  "pagination": { "totalResults": 2, "startIndex": 0, "itemsPerPage": 50 }
+}

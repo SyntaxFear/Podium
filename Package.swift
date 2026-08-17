@@ -14,6 +14,9 @@ let package = Package(
     targets: [
         .target(name: "PodiumKit", dependencies: [.product(name: "GRDB", package: "GRDB.swift")]),
         .executableTarget(name: "PodiumSmoke", dependencies: ["PodiumKit"]),
-        .testTarget(name: "PodiumKitTests", dependencies: ["PodiumKit"]),
+        .testTarget(
+            name: "PodiumKitTests",
+            dependencies: ["PodiumKit"],
+            resources: [.copy("Fixtures")]),
     ]
 )
