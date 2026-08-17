@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://github.com/SyntaxFear/Podium/actions/workflows/ci.yml"><img src="https://github.com/SyntaxFear/Podium/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%2015%2B-blue" alt="macOS 15+">
+  <img src="https://img.shields.io/badge/platform-macOS%2026%2B-blue" alt="macOS 26+">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT">
   <img src="https://img.shields.io/badge/Swift-6-orange" alt="Swift 6">
 </p>
@@ -27,17 +27,20 @@ Podium is the third option: a native Mac app that does the essential ASO loop �
 
 ## What it does
 
-- **Keyword rank tracking** — your position in App Store search results for any keyword, in any of 175 storefronts, with daily history and charts.
+- **Keyword rank tracking** — your position in App Store search results for any keyword, in any of 175 storefronts, with daily history and charts. Bulk-add keywords across multiple countries at once.
 - **Official popularity scores** — Apple's 0–100 popularity for your tracked terms (via your free Apple Ads account).
-- **Discover** — browse Apple's official *most searched terms* per country and category; one click to start tracking any of them.
+- **Discover** — browse Apple's official *most searched terms* across several countries and categories at once — rank, popularity, and every field Apple returns.
+- **Competitor compare** — track any App Store app as a competitor and see their rank next to yours on every keyword you track.
+- **Ads performance dashboard** — spend, impressions, taps, installs, CPI, and Apple's own bid recommendations, at the campaign / ad group / keyword / search-term level.
 - **Ratings watch** — current rating and count for every app you track.
 - **Menu bar + notifications** — today's movements at a glance; get notified when a rank changes.
 - **CSV export** — your data is yours.
 - **Read-only by design** — Podium can see your Apple Ads data but can never spend a cent or change a campaign.
+- **Native Liquid Glass UI** — built for macOS 26, using Apple's system materials throughout.
 
 ## Privacy
 
-There is no Podium server. The app talks only to Apple (`itunes.apple.com`, `api.searchads.apple.com`, `appleid.apple.com`). Credentials live in your macOS Keychain; history lives in a local SQLite file. Delete the app and it's all gone.
+There is no Podium server. The app talks only to Apple (`itunes.apple.com`, `api.ads.apple.com`, `appleid.apple.com`). Credentials live in your macOS Keychain; history lives in a local SQLite file. Delete the app and it's all gone.
 
 ## Install
 
@@ -55,7 +58,7 @@ xcodegen generate
 xcodebuild -project Podium.xcodeproj -scheme Podium -configuration Release build
 ```
 
-Requires Xcode 16+ / macOS 15+.
+Requires Xcode 26+ / macOS 26+ (for native Liquid Glass).
 
 ## Getting started
 
@@ -89,9 +92,9 @@ PodiumKit is UI-free on purpose: a CLI or MCP server for AI agents can reuse the
 
 ## Roadmap
 
-- Campaign reports (read-only) once the new reporting endpoints are verified against live accounts
+- Live verification of the reports/recommendations endpoints against a real Apple Ads account
 - Notarized builds + Homebrew cask
-- Competitor keyword tracking, review monitoring
+- Review monitoring, change-history timeline
 - MCP server so AI assistants can query your ASO data
 - Google Play
 
