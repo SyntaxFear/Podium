@@ -5,6 +5,7 @@ struct WizardView: View {
     enum Step { case welcome, choosePath, generateKey, enterIds, done }
 
     @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
     /// When true, the wizard opens directly at the key step (used for "Connect Apple Ads" later).
     var connectOnly = false
 
@@ -26,6 +27,22 @@ struct WizardView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.background)
+        .overlay(alignment: .topTrailing) {
+            if connectOnly {
+                Button {
+                    model.showConnectWizard = false
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.cancelAction)
+                .padding(14)
+                .help("Close — you can finish connecting anytime")
+            }
+        }
         .onAppear { if connectOnly { generateKey(); step = .generateKey } }
     }
 

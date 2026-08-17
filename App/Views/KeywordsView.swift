@@ -6,9 +6,15 @@ struct KeywordsView: View {
     @Environment(AppModel.self) private var model
     @State private var showAddKeyword = false
     @State private var detailRow: KeywordRow?
+    @State private var selection = Set<KeywordRow.ID>()
+    @State private var sortOrder = [KeyPathComparator(\KeywordRow.rankSort)]
 
     private var appName: String {
         model.apps.first(where: { $0.id == model.selectedAppId })?.name ?? ""
+    }
+
+    private var sortedRows: [KeywordRow] {
+        model.rows.sorted(using: sortOrder)
     }
 
     var body: some View {
@@ -18,11 +24,11 @@ struct KeywordsView: View {
                     "No keywords yet", systemImage: "key",
                     description: Text("Add the search terms people would use to find \(appName)."))
             } else {
-                Table(model.rows) {
-                    TableColumn("Keyword") { row in
+                Table(sortedRows, selection: $selection, sortOrder: $sortOrder) {
+                    TableColumn("Keyword", value: \.term) { row in
                         Text(row.term).fontWeight(.medium)
                     }
-                    TableColumn("Popularity") { row in
+                    TableColumn("Popularity", value: \.popularitySort) { row in
                         if let popularity = row.popularity {
                             HStack(spacing: 6) {
                                 ProgressView(value: Double(popularity), total: 100)
@@ -38,7 +44,7 @@ struct KeywordsView: View {
                         }
                     }
                     .width(120)
-                    TableColumn("My rank") { row in
+                    TableColumn("My rank", value: \.rankSort) { row in
                         HStack(spacing: 4) {
                             Text(row.rank.map { "#\($0)" } ?? "–")
                                 .monospacedDigit().fontWeight(.semibold)
@@ -54,7 +60,7 @@ struct KeywordsView: View {
                         sparkline(row.history)
                     }
                     .width(130)
-                    TableColumn("Country") { row in
+                    TableColumn("Country", value: \.country) { row in
                         Text(row.country.uppercased()).foregroundStyle(.secondary)
                     }
                     .width(70)
@@ -63,6 +69,19 @@ struct KeywordsView: View {
                             .buttonStyle(.link)
                     }
                     .width(60)
+                }
+                .contextMenu(forSelectionType: KeywordRow.ID.self) { ids in
+                    Button("Stop tracking", role: .destructive) {
+                        ids.forEach { model.deleteKeyword($0) }
+                    }
+                } primaryAction: { ids in
+                    if let id = ids.first, let row = model.rows.first(where: { $0.id == id }) {
+                        detailRow = row
+                    }
+                }
+                .onDeleteCommand {
+                    selection.forEach { model.deleteKeyword($0) }
+                    selection.removeAll()
                 }
             }
         }

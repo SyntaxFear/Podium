@@ -15,6 +15,9 @@ struct KeywordRow: Identifiable, Equatable {
         guard let rank, let previousRank else { return nil }
         return previousRank - rank
     }
+
+    var rankSort: Int { rank ?? Int.max }
+    var popularitySort: Int { popularity ?? -1 }
 }
 
 enum SidebarItem: Hashable {
@@ -82,6 +85,21 @@ final class AppModel {
     func trackTerm(_ term: String, appId: Int, country: String) {
         try? db.addKeyword(appId: appId, term: term.lowercased(), country: country.lowercased())
         if selectedAppId == appId { reloadRows() }
+    }
+
+    func deleteKeyword(_ id: Int64) {
+        try? db.deleteKeyword(id: id)
+        reloadRows()
+    }
+
+    func removeApp(_ id: Int) {
+        try? db.deleteApp(id: id)
+        reloadApps()
+        if selectedAppId == id {
+            selectedAppId = apps.first?.id
+            destination = selectedAppId.map(SidebarItem.app)
+            reloadRows()
+        }
     }
 
     func reloadApps() {

@@ -59,6 +59,9 @@ struct RootView: View {
                         }
                     }
                     .tag(SidebarItem.app(app.id))
+                    .contextMenu {
+                        Button("Remove app", role: .destructive) { model.removeApp(app.id) }
+                    }
                 }
                 Button {
                     showAddApp = true

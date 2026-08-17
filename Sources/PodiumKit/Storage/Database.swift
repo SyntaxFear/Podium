@@ -115,6 +115,23 @@ public final class PodiumDatabase: Sendable {
         }
     }
 
+    public func deleteKeyword(id: Int64) throws {
+        try queue.write { db in
+            try db.execute(sql: "DELETE FROM rankSnapshot WHERE keywordId = ?", arguments: [id])
+            try db.execute(sql: "DELETE FROM trackedKeyword WHERE id = ?", arguments: [id])
+        }
+    }
+
+    public func deleteApp(id: Int) throws {
+        try queue.write { db in
+            try db.execute(
+                sql: "DELETE FROM rankSnapshot WHERE keywordId IN (SELECT id FROM trackedKeyword WHERE appId = ?)",
+                arguments: [id])
+            try db.execute(sql: "DELETE FROM trackedKeyword WHERE appId = ?", arguments: [id])
+            try db.execute(sql: "DELETE FROM trackedApp WHERE id = ?", arguments: [id])
+        }
+    }
+
     public func rankHistory(keywordId: Int64, limit: Int = 90) throws -> [RankSnapshot] {
         try queue.read { db in
             try RankSnapshot.filter(Column("keywordId") == keywordId)
