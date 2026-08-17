@@ -54,4 +54,18 @@ public struct RefreshEngine: Sendable {
         }
         return changes
     }
+
+    /// Checks every tracked competitor against every keyword of the app it's attached to.
+    public func refreshCompetitors() async throws {
+        for keyword in try db.allKeywords() {
+            let competitors = try db.competitors(appId: keyword.appId)
+            for competitor in competitors {
+                try? await Task.sleep(for: .milliseconds(400))
+                let rank: Int? = (try? await rankProvider(
+                    keyword.term, keyword.country, competitor.competitorAdamId)) ?? nil
+                try db.insertCompetitorRankSnapshot(
+                    competitorId: competitor.id, keywordId: keyword.id, rank: rank, at: now())
+            }
+        }
+    }
 }

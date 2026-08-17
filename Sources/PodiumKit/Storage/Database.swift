@@ -34,6 +34,24 @@ public struct RankSnapshot: Codable, Sendable, Equatable, FetchableRecord, Persi
     public var checkedAt: Date
 }
 
+public struct TrackedCompetitor: Codable, Sendable, Equatable, FetchableRecord, PersistableRecord, Identifiable {
+    public static let databaseTableName = "trackedCompetitor"
+    public var id: Int64
+    public var appId: Int
+    public var competitorAdamId: Int
+    public var name: String
+    public var artworkURL: String?
+}
+
+public struct CompetitorRankSnapshot: Codable, Sendable, Equatable, FetchableRecord, PersistableRecord {
+    public static let databaseTableName = "competitorRankSnapshot"
+    public var id: Int64?
+    public var competitorId: Int64
+    public var keywordId: Int64
+    public var rank: Int?
+    public var checkedAt: Date
+}
+
 public final class PodiumDatabase: Sendable {
     let queue: DatabaseQueue
 
@@ -61,6 +79,23 @@ public final class PodiumDatabase: Sendable {
             }
             try db.create(table: "rankSnapshot") { t in
                 t.autoIncrementedPrimaryKey("id")
+                t.belongsTo("keyword", inTable: "trackedKeyword").notNull()
+                t.column("rank", .integer)
+                t.column("checkedAt", .datetime).notNull()
+            }
+        }
+        migrator.registerMigration("v2_competitors") { db in
+            try db.create(table: "trackedCompetitor") { t in
+                t.autoIncrementedPrimaryKey("id")
+                t.belongsTo("app", inTable: "trackedApp").notNull()
+                t.column("competitorAdamId", .integer).notNull()
+                t.column("name", .text).notNull()
+                t.column("artworkURL", .text)
+                t.uniqueKey(["appId", "competitorAdamId"])
+            }
+            try db.create(table: "competitorRankSnapshot") { t in
+                t.autoIncrementedPrimaryKey("id")
+                t.belongsTo("competitor", inTable: "trackedCompetitor").notNull()
                 t.belongsTo("keyword", inTable: "trackedKeyword").notNull()
                 t.column("rank", .integer)
                 t.column("checkedAt", .datetime).notNull()
@@ -138,6 +173,53 @@ public final class PodiumDatabase: Sendable {
                 try RankSnapshot.filter(Column("keywordId") == keywordId)
                     .order(Column("checkedAt").desc).limit(limit).fetchAll(db)
                     .reversed())
+        }
+    }
+
+    @discardableResult
+    public func addCompetitor(
+        appId: Int, competitorAdamId: Int, name: String, artworkURL: String?
+    ) throws -> TrackedCompetitor {
+        try queue.write { db in
+            let existing = try TrackedCompetitor
+                .filter(Column("appId") == appId && Column("competitorAdamId") == competitorAdamId)
+                .fetchOne(db)
+            if let existing { return existing }
+            let id = try Int64.fetchOne(db, sql: "SELECT COALESCE(MAX(id),0)+1 FROM trackedCompetitor")!
+            let competitor = TrackedCompetitor(
+                id: id, appId: appId, competitorAdamId: competitorAdamId,
+                name: name, artworkURL: artworkURL)
+            try competitor.insert(db)
+            return competitor
+        }
+    }
+
+    public func competitors(appId: Int) throws -> [TrackedCompetitor] {
+        try queue.read { db in
+            try TrackedCompetitor.filter(Column("appId") == appId).order(Column("name")).fetchAll(db)
+        }
+    }
+
+    public func deleteCompetitor(id: Int64) throws {
+        try queue.write { db in
+            try db.execute(sql: "DELETE FROM competitorRankSnapshot WHERE competitorId = ?", arguments: [id])
+            try db.execute(sql: "DELETE FROM trackedCompetitor WHERE id = ?", arguments: [id])
+        }
+    }
+
+    public func insertCompetitorRankSnapshot(competitorId: Int64, keywordId: Int64, rank: Int?, at date: Date) throws {
+        try queue.write { db in
+            var snapshot = CompetitorRankSnapshot(
+                id: nil, competitorId: competitorId, keywordId: keywordId, rank: rank, checkedAt: date)
+            try snapshot.insert(db)
+        }
+    }
+
+    public func latestCompetitorRank(competitorId: Int64, keywordId: Int64) throws -> CompetitorRankSnapshot? {
+        try queue.read { db in
+            try CompetitorRankSnapshot
+                .filter(Column("competitorId") == competitorId && Column("keywordId") == keywordId)
+                .order(Column("checkedAt").desc).fetchOne(db)
         }
     }
 }

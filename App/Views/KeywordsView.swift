@@ -5,6 +5,7 @@ import PodiumKit
 struct KeywordsView: View {
     @Environment(AppModel.self) private var model
     @State private var showAddKeyword = false
+    @State private var showCompare = false
     @State private var detailRow: KeywordRow?
     @State private var selection = Set<KeywordRow.ID>()
     @State private var sortOrder = [KeyPathComparator(\KeywordRow.rankSort)]
@@ -99,6 +100,13 @@ struct KeywordsView: View {
             }
             ToolbarItem {
                 Button {
+                    showCompare = true
+                } label: {
+                    Label("Compare", systemImage: "person.2")
+                }
+            }
+            ToolbarItem {
+                Button {
                     Task { await model.refresh() }
                 } label: {
                     if model.isRefreshing { ProgressView().controlSize(.small) }
@@ -108,9 +116,11 @@ struct KeywordsView: View {
             }
         }
         .sheet(isPresented: $showAddKeyword) { AddKeywordSheet() }
+        .sheet(isPresented: $showCompare) { CompareSheet() }
         .sheet(item: $detailRow) { row in RankHistorySheet(row: row) }
         .task(id: model.selectedAppId) { await model.loadPopularity() }
         .onChange(of: model.selectedAppId) { _, _ in selection.removeAll() }
+        .onChange(of: model.rows) { _, _ in model.reloadCompetitors() }
         .overlay(alignment: .bottom) {
             if let error = model.lastError {
                 Text(error)

@@ -1,0 +1,25 @@
+{
+  "result": {
+    "rows": [
+      {
+        "metadata": {
+          "id": 111,
+          "text": "kids drawing",
+          "status": "ACTIVE",
+          "displayStatus": "RUNNING",
+          "countryOrRegion": "US",
+          "insights": { "bidRecommendation": { "suggestedBidAmount": 1.25 } }
+        },
+        "totalMetrics": {
+          "localSpend": { "amount": "42.50", "currency": "USD" },
+          "impressions": 5000,
+          "taps": 210,
+          "ttr": 0.042,
+          "tapInstalls": 38,
+          "tapInstallCPI": { "amount": "1.12", "currency": "USD" }
+        }
+      }
+    ]
+  },
+  "pagination": { "offset": 0, "pageSize": 100, "totalCount": 1 }
+}

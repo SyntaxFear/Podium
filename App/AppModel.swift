@@ -2,6 +2,14 @@ import Foundation
 import Observation
 import PodiumKit
 
+struct CompetitorRow: Identifiable, Equatable {
+    let id: Int64
+    let name: String
+    let artworkURL: String?
+    /// keywordId -> latest rank
+    let ranks: [Int64: Int?]
+}
+
 struct KeywordRow: Identifiable, Equatable {
     let id: Int64
     let term: String
@@ -33,6 +41,7 @@ final class AppModel {
     var selectedAppId: Int?
     var destination: SidebarItem?
     var rows: [KeywordRow] = []
+    var competitorRows: [CompetitorRow] = []
     var credentials: AdsCredentials?
     var isRefreshing = false
     var lastError: String?
@@ -110,6 +119,37 @@ final class AppModel {
     func select(appId: Int) {
         selectedAppId = appId
         reloadRows()
+        reloadCompetitors()
+    }
+
+    func reloadCompetitors() {
+        guard let appId = selectedAppId else { competitorRows = []; return }
+        let competitors = (try? db.competitors(appId: appId)) ?? []
+        let keywordIds = rows.map(\.id)
+        competitorRows = competitors.map { competitor in
+            var ranks: [Int64: Int?] = [:]
+            for keywordId in keywordIds {
+                ranks[keywordId] = (try? db.latestCompetitorRank(
+                    competitorId: competitor.id, keywordId: keywordId)?.rank) ?? nil
+            }
+            return CompetitorRow(
+                id: competitor.id, name: competitor.name,
+                artworkURL: competitor.artworkURL, ranks: ranks)
+        }
+    }
+
+    func addCompetitor(_ app: StoreApp) {
+        guard let appId = selectedAppId else { return }
+        try? db.addCompetitor(
+            appId: appId, competitorAdamId: app.trackId, name: app.trackName,
+            artworkURL: app.artworkUrl100)
+        reloadCompetitors()
+        Task { await refresh() }
+    }
+
+    func removeCompetitor(_ id: Int64) {
+        try? db.deleteCompetitor(id: id)
+        reloadCompetitors()
     }
 
     func reloadRows() {
@@ -165,6 +205,7 @@ final class AppModel {
             if UserDefaults.standard.bool(forKey: "notifyOnChanges") {
                 await Notifier.post(changes: changes)
             }
+            try? await engine.refreshCompetitors()
             for app in apps {
                 if let fresh = try? await storeClient.lookup(appId: app.id, country: "us") {
                     try? db.upsertApp(TrackedApp(
@@ -175,6 +216,7 @@ final class AppModel {
             }
             reloadApps()
             reloadRows()
+            reloadCompetitors()
             await loadPopularity()
         } catch {
             lastError = "Refresh failed: \(error)"
