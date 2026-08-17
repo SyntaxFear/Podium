@@ -1,0 +1,8 @@
+{
+  "resultCount": 3,
+  "results": [
+    { "trackId": 111, "trackName": "Other App A", "averageUserRating": 4.1, "userRatingCount": 10, "artworkUrl100": "https://example.com/a.png" },
+    { "trackId": 6797999335, "trackName": "Samosi", "averageUserRating": 4.8, "userRatingCount": 120, "artworkUrl100": "https://example.com/s.png" },
+    { "trackId": 333, "trackName": "Other App B", "averageUserRating": 3.9, "userRatingCount": 5, "artworkUrl100": "https://example.com/b.png" }
+  ]
+}
