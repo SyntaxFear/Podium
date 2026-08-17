@@ -35,6 +35,12 @@ final class AppModel {
     var lastError: String?
     var showOnboarding = false
     var showConnectWizard = false
+    var lastChanges: [RankChange] = []
+
+    var lastRefreshAt: Date? {
+        get { UserDefaults.standard.object(forKey: "lastRefreshAt") as? Date }
+        set { UserDefaults.standard.set(newValue, forKey: "lastRefreshAt") }
+    }
 
     let db: PodiumDatabase
     let storeClient = AppStoreSearchClient()
@@ -114,7 +120,12 @@ final class AppModel {
         defer { isRefreshing = false }
         do {
             let engine = RefreshEngine(db: db, client: storeClient)
-            _ = try await engine.refreshAllKeywords()
+            let changes = try await engine.refreshAllKeywords()
+            lastChanges = changes
+            lastRefreshAt = Date()
+            if UserDefaults.standard.bool(forKey: "notifyOnChanges") {
+                await Notifier.post(changes: changes)
+            }
             for app in apps {
                 if let fresh = try? await storeClient.lookup(appId: app.id, country: "us") {
                     try? db.upsertApp(TrackedApp(

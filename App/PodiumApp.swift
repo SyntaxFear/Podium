@@ -10,5 +10,9 @@ struct PodiumApp: App {
                 .environment(model)
                 .frame(minWidth: 860, minHeight: 520)
         }
+
+        Settings {
+            SettingsView().environment(model)
+        }
     }
 }
