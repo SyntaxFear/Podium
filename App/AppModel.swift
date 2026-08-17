@@ -59,6 +59,17 @@ final class AppModel {
         destination = selectedAppId.map(SidebarItem.app)
         showOnboarding = apps.isEmpty
             && !UserDefaults.standard.bool(forKey: "onboardingDone")
+
+        Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { _ in
+            Task { @MainActor in
+                let autoRefreshSetting = UserDefaults.standard.object(forKey: "autoRefresh")
+                guard autoRefreshSetting == nil || UserDefaults.standard.bool(forKey: "autoRefresh") else { return }
+                let last = self.lastRefreshAt ?? .distantPast
+                if Date().timeIntervalSince(last) > 20 * 3600 {
+                    await self.refresh()
+                }
+            }
+        }
     }
 
     func adsAPI() -> AdsAPIClient? {
